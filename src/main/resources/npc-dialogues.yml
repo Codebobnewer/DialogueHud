@@ -1,0 +1,3 @@
+# Maps a FancyNpcs NPC's name (the internal name given at creation, e.g. /npc create Old_Merchant)
+# to the dialogue it should start when a player interacts with it. See dialogues/greeting.yml.
+Old_Merchant: greeting

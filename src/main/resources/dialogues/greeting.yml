@@ -1,0 +1,27 @@
+# Example dialogue tree, loaded by DialogueHud on startup and via /dialogue reload.
+# Each line has text and a list of options; an option with no "next" ends the dialogue
+# when chosen, and an option's "command" (optional) is run from console with %player%
+# replaced by the player's name.
+speaker: "Old Merchant"
+start: greeting
+
+lines:
+  greeting:
+    text: "Hello, traveler! What brings you here?"
+    options:
+      - text: "Tell me about this place."
+        next: about
+      - text: "I need supplies."
+        next: shop
+      - text: "Goodbye."
+
+  about:
+    text: "This village has stood for a hundred years."
+    options:
+      - text: "Interesting. Goodbye."
+
+  shop:
+    text: "Here, take this. Safe travels."
+    options:
+      - text: "Thanks!"
+        command: "give %player% bread 1"

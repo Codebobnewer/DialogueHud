@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.goga221</groupId>
+    <artifactId>dialoguehud</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>DialogueHud</name>
+    <description>Folia/Paper compatible scroll-and-select dialogue plugin rendered through BetterHud.</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
+        <commandapi.version>12.0.0</commandapi.version>
+        <universalscheduler.version>0.1.7</universalscheduler.version>
+        <lombok.version>1.18.36</lombok.version>
+        <betterhud.version>1.14.1</betterhud.version>
+
+        <shade.base>com.goga221.dialoguehud.libs</shade.base>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- Paper / Folia server API -->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Command registration; provided by the standalone CommandAPI plugin on the server -->
+        <dependency>
+            <groupId>dev.jorel</groupId>
+            <artifactId>commandapi-paper-core</artifactId>
+            <version>${commandapi.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- HUD rendering; provided by the standalone BetterHud plugin on the server.
+             bukkit-api only carries Bukkit-specific glue (events, NMS version); the actual
+             BetterHudAPI/Popup/Placeholder classes live in standard-api, pulled in here at
+             compile scope since bukkit-api's own POM only depends on it at runtime scope. -->
+        <dependency>
+            <groupId>io.github.toxicity188</groupId>
+            <artifactId>BetterHud-bukkit-api</artifactId>
+            <version>${betterhud.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.toxicity188</groupId>
+            <artifactId>BetterHud-standard-api</artifactId>
+            <version>${betterhud.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.toxicity188</groupId>
+            <artifactId>BetterCommand</artifactId>
+            <version>1.4.3</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- NPC hosting for dialogue triggers; provided by the standalone FancyNpcs plugin
+             on the server. Pinned to a local jar because every FancyNpcs build currently on
+             Maven Central/its own repo is compiled for Java 25, while this server (and the
+             rest of this project) targets Java 21 - "2.10.1-java21" is FancyNpcs' own
+             Java-21-targeted build, published only as a Modrinth download, not to Maven. -->
+        <dependency>
+            <groupId>de.oliver</groupId>
+            <artifactId>FancyNpcs</artifactId>
+            <version>2.10.1-java21</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/FancyNpcs-2.10.1-java21.jar</systemPath>
+        </dependency>
+
+        <!-- Folia/Paper/Spigot unified task scheduling -->
+        <dependency>
+            <groupId>com.github.Anon8281</groupId>
+            <artifactId>UniversalScheduler</artifactId>
+            <version>${universalscheduler.version}</version>
+        </dependency>
+
+        <!-- Boilerplate reduction (compile-time only) -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>${project.name}-${project.version}</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>dialogues/**</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>dialogues/**</include>
+                </includes>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <id>shade</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>false</minimizeJar>
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.github.Anon8281.universalScheduler</pattern>
+                                    <shadedPattern>${shade.base}.universalscheduler</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
